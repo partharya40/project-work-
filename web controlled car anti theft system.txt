@@ -1,0 +1,184 @@
+#!/usr/bin/python 
+# Import the required modules 
+import cv2, os 
+importnumpy as np 
+from PIL import Image 
+# For face detection we will use the Haar Cascade provided by OpenCV. 
+cascadePath = "haarcascade_frontalface_default.xml" 
+faceCascade = cv2.CascadeClassifier(cascadePath) 
+# For face recognition we will the the LBPH Face Recognizer 
+recognizer = cv2.createLBPHFaceRecognizer() 
+defget_images_and_labels(path): 
+# Append all the absolute image paths in a list image_paths 
+# We will not read the image with the .sad extension in the training set 
+# Rather, we will use them to test our accuracy of the training 
+image_paths = [os.path.join(path, f) for f in os.listdir(path) if not f.endswith('.png')] 
+# images will contains face images 
+images = [] 
+# labels will contains the label that is assigned to the image 
+labels = [] 
+forimage_path in image_paths: 
+# Read the image and convert to grayscale 
+image_pil = Image.open(image_path).convert('L') 
+# Convert the image format into numpy array 
+image = np.array(image_pil, 'uint8') 
+# Get the label of the image 
+nbr = int(os.path.split(image_path)[1].split(".")[0].replace("subject", "")) 
+11 
+# Detect the face in the image 
+faces = faceCascade.detectMultiScale(image) 
+# If face is detected, append the face to images and the label to labels 
+for (x, y, w, h) in faces: 
+images.append(image[y: y + h, x: x + w]) 
+labels.append(nbr) 
+cv2.imshow("Adding faces to traning set...", image[y: y + h, x: x + w]) 
+cv2.waitKey(50) 
+# return the images list and labels list 
+return images, labels 
+# Path to the Yale Dataset 
+path = './yalefaces' 
+# Call the get_images_and_labels function and get the face images and the 
+# corresponding labels 
+images, labels = get_images_and_labels(path) 
+cv2.destroyAllWindows() 
+# Perform the tranining 
+recognizer.train(images, np.array(labels)) 
+# Append the images with the extension .sad into image_paths 
+image_paths = [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.png')] 
+forimage_path in image_paths: 
+predict_image_pil = Image.open(image_path).convert('L') 
+predict_image = np.array(predict_image_pil, 'uint8') 
+faces = faceCascade.detectMultiScale(predict_image) 
+for (x, y, w, h) in faces: 
+nbr_predicted, conf = recognizer.predict(predict_image[y: y + h, x: x + w]) 
+nbr_actual = int(os.path.split(image_path)[1].split(".")[0].replace("subject", "")) 
+ifnbr_actual == nbr_predicted: 
+12 
+print "{} is Correctly Recognized with confidence {}".format(nbr_actual, conf) 
+else: 
+print "{} is Incorrect Recognized as {} with confidence {}".format(nbr_actual, 
+nbr_predicted,conf) 
+cv2.imshow("Recognizing Face", predict_image[y: y + h, x: x + w]) 
+cv2.waitKey(1000) 
+2.5 OPEN CV 
+
+OpenCV is a library of programming functions which can be used to work on various languages 
+and operating systems. OpenCV functions are widely used to perform facial recognition and 
+detection. We are using Python which is a general purpose programming language to perform 
+coding for facial recognition application. OpenCV is installed on raspberry pi using certain Linux 
+commands and then Linear Binary Patterns Histograms technique is followed and to write the 
+face recognition application.
+ 
+2.5.1 Steps To Install OpenCV 
+$ sudo apt-get update 
+$sudo apt-get install build essential cmakepkg-config python-dev libgtk2.0-dev libgtk2.0 zlib1g- 
+dev libpng-devlibjpeg-devlibHRP-devlibjasper-devlibavcodec-dev 
+$ wig unzip 
+Wgethttp://downloads.sourceforge.net/projects/opencvlibrary/opencv-unix/2.4.9/opencv- 
+2.4.9.zip 
+Unzip opencv-2.4.9.zip 
+Cp opencv-2.4.9 
+Cmake-DCMAKE_VUILD_TYPE-RELEASE-DCMAKE_INSTALL_PREFIX_/usr/local- 
+DBUILD_JPERF_TESTS_OFF-DBUILD opencv_gpu-OFF_DBUILD_opencv_OCL-OFF 
+Make 
+13 
+$ sudo make install 
+PYTHON DEPENDENCIES 
+$ sudo apt-get install_pip 
+$ sudo apt-get install_dev 
+$ sudo apt-get install picamera 
+$ sudo apt-get install rpio 
+2.5.2 INSTALLING CAMERA (USB) 
+$ sudo apt-get install fswebcam 
+Fswebcam image.jpg 
+Fswebcam –r 1280*720 image.png 
+Fswebcam –r 1280*720 – no-banner image.png 
+2.6 PORT FORWARDING 
+
+Port forwarding or port mapping is a Network Address Translation (NAT) application which 
+redirects a communication request from one address and port number combination to another 
+while the packets are traversing through a network gateway, like a router or firewall. Port 
+forwarding enables remote computers or computers on the Internet to connect to a specific 
+computer or service within a private local-area network (LAN). We have used MTS- Mblaze Wi- 
+Fi internet dongle to connect raspberry pi to the internet. When Apache server is installed on 
+raspberry to make it work as a web server, the system is given a unique WAN IP address and 
+through the combination of that IP address and port number, computers on the internet can 
+access the web interface on the Raspberry Pi.
+ 
+14 
+2.7 APACHE SERVER 
+Apache is a freely available Web server that is distributed under an "open source" license. 
+Version 2.0 runs on most UNIX-based operating systems (such as Linux, Solaris, Digital UNIX, 
+and AIX), on other UNIX/POSIX-derived systems (such as Rhapsody, BeOS, and 
+BS2000/OSD), on AmigaOS, and on Windows 2000. 
+INSTALL APACHE WEB SERVER 
+First install the apache2 package by typing the following command in to the Terminal: 
+sudo apt-get install apache2 -y 
+Test the web server 
+By default, Apache puts a test HTML file in the web folder. This default web page is served 
+when you browse to http://localhost/ on the Pi itself or http://192.168.1.10 (whatever the Pi's IP 
+address is) from another computer on the network. To find the Pi's IP address, type hostname -I 
+at the command line (or read more about finding your IP address). 
+Browse to the default web page either on the Pi or from another computer on the network and 
+you should see the following:
+ 
+This means you have apache working! 
+• This default web page is just a HTML file on the file system. It is located at 
+/var/www/html/index.html. 
+• The directory was /var/www in Raspbian Wheezy but is now /var/www/html in 
+Raspbian Jessie 
+• Navigate to this directory in the Terminal and have a look at what's inside: 
+Cd /var/www/html and then ls –al 
+15 
+Fig.10 Apache2 Debian Default Page 
+
+2.8 OWNCLOUD 
+OwnCloud is a web service which provides file sync and share that is hosted either in your local 
+computer or on your servers, using cloud storage. Files can be accessed universally via a single 
+front-end to all of your desired devices. The users can access any files/folder present on the 
+cloud from any device and at any time, from any part of the world. We can perform deletion, 
+addition operations on the file contents and it provides client facility service that any update in 
+the account will be notified in all the connected devices. Owncloud can be installed on Debian 
+16 
+with the help of some UNIX commands. Owncloud lets the Pi work as a host or server for the 
+cloud storage and it provides the functionality that any handheld connected device can access 
+that cloud using the owncloud client application or a simple web browser. The ownlcoud 
+interface works on the localhost as well as the ip address given by the router. It can be made to 
+work on the universal IP address that is obtained using port forwarding so that it can be accessed 
+via a simple web browser at any time. The client application can also be installed on the device 
+so that any alteration in the cloud like adding files or updating the content of the files can be 
+notified to the user. It automatically creates and download the cloud. Files to the client system 
+when the client app is installed on the device. 
+OwnCloud is enterprise file sync and share that is hosted in your data center, on your servers, usi 
+ng your storage. OwnCloud provides Universal File Access through a single front-end to all of y 
+our disparate systems. Users can access company files on any device, anytime, from anywhere 
+while IT can manage, control and audit file sharing activity to ensure security and compliance m 
+easures are met. 
+Fig.11 Owncloud Login Page 
+17 
+
+2.8.1 INSTALLING OWNCLOUD ON PI 
+1. Open the terminal and type the following 
+$sudo su 
+nano /etc/apt/sources.ist.d/owncloud.list 
+deb 
+http://downcloud.opensuse.org/repositories/isv:owncloud:community/De bian_6.0// 
+$sudo apt-get update 
+Cd #wget 
+http://download.opensuse.org/repositories/isv:ownCloud:community/De 
+bian_6.0/Release.key 
+#sudo apt-key add <Release.key 
+#sudo apt-get update 
+#sudo apt-get install ownCloud 
+2. Type ifconfig and obtain the ip address such as– 10.4.40.13 
+3. Open http://10.4.40.13/owncloud/index.php 
+4. Enter username and password 
+5. New->Text file->temp.txt 
+18 
+6. Install owncloud on windows by going to http://download.owncloud.com/desktop/stable/ownclo 
+ud-1.6.3.3721- setup.exe 
+7. Complete the setup by typing the ip address of the pi, username and the password 
+2.9 SSMTP 
+SSMTP is a feature which provides to send/ receive mail from any configured device/system 
+to/from our local system. It have a configuration file in the directory /etc/ssmtp/ssmtp.conf which 
+contain all the required authentication essentials. 
